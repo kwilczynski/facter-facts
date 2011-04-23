@@ -2,6 +2,7 @@
 # partitions.rb
 #
 
+require 'thread'
 require 'facter'
 
 if Facter.value(:kernel) == 'Linux'
@@ -37,8 +38,10 @@ if Facter.value(:kernel) == 'Linux'
     # Apply our device type filter ...
     next if exclude.include?(disk)
 
-    # A disk is not a partition, is it not?
-    (partitions[disk] ||= []) << partition unless partition == disk
+    Thread.exclusive do
+      # A disk is not a partition, is it not?
+      (partitions[disk] ||= []) << partition unless partition == disk
+    end
   end
 
   disks = partitions.keys.join(',')
