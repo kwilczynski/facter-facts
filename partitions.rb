@@ -24,6 +24,8 @@ if Facter.value(:kernel) == 'Linux'
 
   partitions = {}
 
+  mutex = Mutex.new
+
   result = %x{ cat /proc/partitions 2> /dev/null }
 
   result.each do |l|
@@ -38,7 +40,7 @@ if Facter.value(:kernel) == 'Linux'
     # Apply our device type filter ...
     next if exclude.include?(disk)
 
-    Thread.exclusive do
+    mutex.synchronize do
       # A disk is not a partition, is it not?
       (partitions[disk] ||= []) << partition unless partition == disk
     end
