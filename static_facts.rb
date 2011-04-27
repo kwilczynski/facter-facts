@@ -2,7 +2,7 @@
 # static_facts.rb
 #
 # Allows to expose any statically defined key-value pair as a Facter fact
-# with the ability to include other files ...
+# with the ability to include other files ...
 #
 # For example:
 #
@@ -12,13 +12,13 @@
 #   answer=42
 #
 # Then upon execution both "foo" and "answer" will be available as facts
-# to use directly from within Facter.
+# to use directly from within Facter.
 #
 # Another example concerns usage of the "include" directive which allows
-# for including single file as well as group of files when a wild card
-# pattern was introduced.  Any additional files which may act as a source
+# for including single file as well as group of files when a wild card
+# pattern was introduced.  Any additional files which may act as a source
 # of static facts should be preferably stored under /etc/facts.d/
-# directory purely to maintain order and simplify management ...
+# directory purely to maintain order and simplify management ...
 #
 # Given the following content of /etc/facts.conf:
 #
@@ -44,7 +44,7 @@
 # is a limit to the level of recursion in order to stop infinite
 # and/or circular recursion from happening ...
 #
-# This code was inspired by R. I. Pienaar's etc_facts.rb.
+# This code was inspired by R. I. Pienaar's etc_facts.rb.
 #
 
 require 'thread'
@@ -69,8 +69,9 @@ class StaticFact
       return unless File.exists?(file)
 
       File.readlines(file).each do |line|
-        next if line.match(/^#/)       # Skip comments if any ...
-        next if line.match(/^\n|\r\n/) # Skip empty lines ...
+        next if line.match(/^#.*/)      # Skip comments if any ...
+        next if line.match(/^\s*$/)     # Skip blank lines ...
+        next if line.match(/^\n|\r\n$/) # Skip empty lines ...
 
         if match = line.match(/^include\s+(.+)$/)
           file  = File.expand_path(match[1].strip)
