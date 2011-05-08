@@ -106,6 +106,6 @@ facts.each do |name, value|
   end
 end
 
-facts.clear # Remove all.  Schedule for garbage collection ...
+facts.clear # Remove all...
 
 # vim: set ts=2 sw=2 et :
