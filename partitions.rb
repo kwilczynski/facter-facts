@@ -11,7 +11,7 @@ if Facter.value(:kernel) == 'Linux'
   exclude = %w( cciss dm loop )
 
   #
-  # Modern Linux kernels provide "/proc/partitions" as for example:
+  # Modern Linux kernels provide "/proc/partitions" in the following format:
   #
   #  major minor  #blocks  name
   #
@@ -42,7 +42,7 @@ if Facter.value(:kernel) == 'Linux'
 
     mutex.synchronize do
       # A disk is not a partition, is it not?
-      (partitions[disk] ||= []) << partition unless partition == disk
+      (partitions[disk] ||= []) << partition if not partition == disk
     end
   end
 
