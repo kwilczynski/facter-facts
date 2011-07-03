@@ -44,38 +44,62 @@
 # is a limit to the level of recursion in order to stop infinite
 # and/or circular recursion from happening ...
 #
-# This code was inspired by R. I. Pienaar's etc_facts.rb.
+# Worth noting is that we allow for single space before and after
+# the equals sign i.e. "abc = def" to aid readability. But this
+# is not recommended and should be rather avoided ...
 #
 
 require 'thread'
 require 'facter'
 
 class StaticFact
-  @@facts = {}
+
   @@mutex = Mutex.new
-  @@maximum_recursion_level = 8 # Sane default? Hope so ...
+
+  # Sane default? Hope so ...
+  @@maximum_recursion_level = 8
   @@current_recursion_level = 0
+
+  @@facts = {}
 
   class << self
     def load_facts(file='/etc/facts.conf')
-      parse_file(file) # Parse and load facts from the origin file ...
+      # Just a fail-safe ...
+      return unless File.exists?(file)
+
+      # Parse and load facts from the origin file ...
+      parse_file(file)
       @@facts
     end
 
     private
+
     def parse_file(file)
+      directory = File.dirname(file)
+
       # We cannot allow for endless recursion ...
       return if @@current_recursion_level > @@maximum_recursion_level
-      return unless File.exists?(file)
 
-      File.readlines(file).each do |line|
-        next if line.match(/^#.*/)      # Skip comments if any ...
-        next if line.match(/^\s*$/)     # Skip blank lines ...
-        next if line.match(/^\n|\r\n$/) # Skip empty lines ...
+      # Since we include different files we check whether they still exist ...
+      return unless File.exists?(directory) or File.exists?(file)
 
-        if match = line.match(/^include\s+(.+)$/)
-          file  = File.expand_path(match[1].strip)
-          files = Dir.glob(file) # Look for wild card pattern ...
+      File.readlines(file).each do |l|
+        next if l.match(/^#.*/)      # Skip comments if any ...
+        next if l.match(/^\s*$/)     # Skip blank lines ...
+        next if l.match(/^\n|\r\n$/) # Skip empty lines ...
+
+        # Remove bloat ...
+        l.strip!
+
+        if match = l.match(/^include\s+(.+)$/)
+          file = match[1].strip
+          file = File.expand_path(file)
+
+          # Look for wild card pattern ...
+          files = Dir.glob(file)
+
+          # There are no files to include ... so skip ...
+          next if files.empty?
 
           if files.size > 1
             #
@@ -86,12 +110,15 @@ class StaticFact
             files.each { |f| parse_file(f) }
           else
             @@mutex.synchronize { @@current_recursion_level += 1 }
-            parse_file(file) # Parse and load facts from an include file ...
+            # Parse and load facts from an include file ...
+            parse_file(file)
           end
-        elsif match = line.match(/^(.+)=(.+)$/)
-          @@mutex.synchronize {
-            @@facts.update({ match[1].strip => match[2].strip })
-          }
+        elsif match = l.match(/^(.+)\s?=\s?(.+)$/)
+          # Since we allow spaces we have to clean it up a little ...
+          name  = match[1].strip
+          value = match[2].strip
+
+          @@mutex.synchronize { @@facts.update(name => value) }
         end
       end
     end
@@ -100,12 +127,12 @@ end
 
 facts = StaticFact.load_facts
 
-facts.each do |name, value|
-  Facter.add(name) do
-    setcode { value }
+if facts
+  facts.each do |name, value|
+    Facter.add(name) do
+      setcode { value }
+    end
   end
 end
-
-facts.clear # Remove all...
 
 # vim: set ts=2 sw=2 et :
