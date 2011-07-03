@@ -7,8 +7,18 @@ require 'facter'
 
 if Facter.value(:kernel) == 'Linux'
 
-  # Support for the following requires magic to be added ...
-  exclude = %w( cciss dm loop )
+  mutex = Mutex.new
+
+  disks      = []
+  partitions = Hash.new { |k,v| k[v] = [] }
+
+  #
+  # Support for the following might not be of interest ...
+  #
+  # MMC is Multi Media Card which can be either SD or microSD, etc ...
+  # MTD is Memory Technology Device also known as Flash Memory
+  #
+  exclude = %w( backdev.* dm loop md mmcblk mtdblock ramzswap )
 
   #
   # Modern Linux kernels provide "/proc/partitions" in the following format:
@@ -22,45 +32,56 @@ if Facter.value(:kernel) == 'Linux'
   #     8        4    1028160 sda4
   #
 
-  partitions = {}
+  # Make regular expression form our patterns ...
+  exclude = Regexp.union(exclude.collect { |i| Regexp.new(i) })
 
-  mutex = Mutex.new
-
-  result = %x{ cat /proc/partitions 2> /dev/null }
-
-  result.each do |l|
-    l = l.strip
+  %x{ cat /proc/partitions 2> /dev/null }.each do |l|
+    # Remove bloat ...
+    l.strip!
 
     # Line of interest should start with a number ...
     next if l.empty? or l.match(/^[a-zA-Z]+/)
 
-    partition = l.split(/\s+/)[3]
-    disk      = partition.scan(/[a-zA-Z]+/)[0]
+    # We have something, so let us apply our device type filter ...
+    next if l.match(exclude)
 
-    # Apply our device type filter ...
-    next if exclude.include?(disk)
+    # Only disks and partitions matter ...
+    partition = l.split(/\s+/)[3]
+
+    if partition.match(/^cciss/)
+      #
+      # Special case for Hewlett-Packard Smart Array which probably
+      # nobody is using any more nowadays anyway ...
+      #
+      partition = partition.split('/')[1]
+      disk      = partition.scan(/^([a-zA-Z0-9]+)[pP][0-9]/)
+    else
+      # Everything else ...
+      disk = partition.scan(/^[a-zA-Z]+/)
+    end
+
+    disk = disk.to_s
+
+    # We have something rather odd that did not parse at all, so ignore ...
+    next if disk.empty?
 
     mutex.synchronize do
-      # A disk is not a partition, is it not?
-      (partitions[disk] ||= []) << partition if not partition == disk
+      # All disks ... This might even be sda, sdaa, sdab, sdac, etc ...
+      disks << disk
+      # A disk is not a partition, therefore we ignore ...
+      partitions[disk] << partition unless partition == disk
     end
   end
 
-  disks = partitions.keys.join(',')
-
   Facter.add('disks') do
     confine :kernel => :linux
-
-    setcode { disks }
+    setcode { disks.sort.uniq.join(',') }
   end
 
-  partitions.each do |k, v|
-    v = v.sort.join(',')
-
+  partitions.each do |k,v|
     Facter.add("partitions_#{k}") do
       confine :kernel => :linux
-
-      setcode { v }
+      setcode { v.sort.join(',') }
     end
   end
 end
