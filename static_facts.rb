@@ -83,15 +83,14 @@ class StaticFact
       # Since we include different files we check whether they still exist ...
       return unless File.exists?(directory) or File.exists?(file)
 
-      File.readlines(file).each do |l|
-        next if l.match(/^#.*/)      # Skip comments if any ...
-        next if l.match(/^\s*$/)     # Skip blank lines ...
-        next if l.match(/^\n|\r\n$/) # Skip empty lines ...
+      File.readlines(file).each do |line|
+        # Skip new lines, empty lines and comment lines ...
+        next if line.match(/^(\r\n|\n|\s*|#.*)$|^$/)
 
         # Remove bloat ...
-        l.strip!
+        line.strip!
 
-        if match = l.match(/^include\s+(.+)$/)
+        if match = line.match(/^include\s+(.+)$/)
           file = match[1].strip
           file = File.expand_path(file)
 
@@ -113,7 +112,7 @@ class StaticFact
             # Parse and load facts from an include file ...
             parse_file(file)
           end
-        elsif match = l.match(/^(.+)\s?=\s?(.+)$/)
+        elsif match = line.match(/^(.+)\s?=\s?(.+)$/)
           # Since we allow spaces we have to clean it up a little ...
           name  = match[1].strip
           value = match[2].strip
@@ -127,7 +126,7 @@ end
 
 facts = StaticFact.load_facts
 
-if facts
+unless facts.empty?
   facts.each do |name, value|
     Facter.add(name) do
       setcode { value }
