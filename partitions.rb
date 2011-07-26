@@ -1,6 +1,12 @@
 #
 # partitions.rb
 #
+# This fact provides an alphabetic list of partitions per disk and disks.
+#
+# We support most of generic SATA and PATA disks, plus Hewlett-Packard
+# Smart Array naming format ...  This also should work for systems running
+# as Virtual Machine guest at least for Xen and KVM ...
+#
 
 require 'thread'
 require 'facter'
@@ -35,6 +41,11 @@ if Facter.value(:kernel) == 'Linux'
   # Make regular expression form our patterns ...
   exclude = Regexp.union(exclude.collect { |i| Regexp.new(i) })
 
+  #
+  # We utilise rely on "cat" for reading values from entries under /proc.
+  # This is due to some problems with IO#read in Ruby and reading content of
+  # the "proc" file system that was reported more than once in the past ...
+  #
   %x{ cat /proc/partitions 2> /dev/null }.each do |l|
     # Remove bloat ...
     l.strip!

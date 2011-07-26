@@ -1,6 +1,11 @@
 #
 # users.rb
 #
+# This fact provides an alphabetic list of users on a Linux system host.
+#
+# The assumption is that users have UID greater than 500 and anything
+# below that is nothing of our concern ...
+#
 
 require 'thread'
 require 'facter'
