@@ -15,7 +15,10 @@ if Facter.value(:kernel) == 'Linux'
 
   mutex = Mutex.new
 
-  mounts  = []
+  # We store a list of block devices hosting mount points here ...
+  mounts = []
+
+  # We store a list of mount points present in the system here ...
   devices = []
 
   #
@@ -50,20 +53,47 @@ if Facter.value(:kernel) == 'Linux'
   exclude = Regexp.union(exclude.collect { |i| Regexp.new(i) })
 
   # List of numeric identifiers with their corresponding canonical forms ...
-  known_devices = Dir['/dev/*'].inject({}) { |k,v| k.update(File.stat(v).rdev => v) }
+  known_devices = Dir['/dev/*'].inject({}) do |k,v|
+    #
+    # We protect ourselves against broken symbolic links under "/dev" and
+    # skip all non-block devices as for example a sound card cannot really
+    # host a file system ...
+    #
+    if File.exists?(v) and File.blockdev?(v)
+      # Resolve any symbolic links we may encounter ...
+      v = File.readlink(v) if File.symlink?(v)
 
-  %x{ cat /proc/mounts 2> /dev/null }.each do |l|
+      #
+      # Make sure that we have full path to the entry under "/dev" ...
+      # This tends to be often broken there ...  Relative path hell ...
+      #
+      v = File.join('/dev', v) unless File.exists?(v)
+
+      mutex.synchronize do
+        k.update(File.stat(v).rdev => v)
+      end
+    end
+
+    k # Yield hash back into the bock ...
+  end
+
+  #
+  # We utilise rely on "cat" for reading values from entries under "/proc".
+  # This is due to some problems with IO#read in Ruby and reading content of
+  # the "proc" file system that was reported more than once in the past ...
+  #
+  %x{ cat /proc/mounts 2> /dev/null }.each do |line|
     # Remove bloat ...
-    l.strip!
+    line.strip!
 
     # Line of interest should not start with ...
-    next if l.empty? or l.match(/^none/)
+    next if line.empty? or line.match(/^none/)
 
     # We have something, so let us apply our device type filter ...
-    next if l.match(exclude)
+    next if line.match(exclude)
 
     # At this point we split single and valid row into tokens ...
-    row = l.split(' ')
+    row = line.split(' ')
 
     # Only device and mount point are of interest ...
     device = row[0].strip
