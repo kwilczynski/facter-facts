@@ -74,7 +74,7 @@ if Facter.value(:kernel) == 'Linux'
       end
     end
 
-    k # Yield hash back into the bock ...
+    k # Yield hash back into the block ...
   end
 
   #
