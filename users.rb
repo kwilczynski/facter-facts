@@ -15,6 +15,7 @@ if Facter.value(:kernel) == 'Linux'
 
   mutex = Mutex.new
 
+  # We store a list of users which are not an essential systems users here ...
   users = []
 
   Puppet::Type.type('user').instances.each do |user|

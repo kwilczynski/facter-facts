@@ -12,7 +12,8 @@ if Facter.value(:kernel) == 'Linux'
 
   mutex = Mutex.new
 
-  filesystems = []
+  # We store a list of file systems here ...
+  file_systems = []
 
   #
   # Modern Linux kernels provide "/proc/filesystems" in the following format:
@@ -51,23 +52,23 @@ if Facter.value(:kernel) == 'Linux'
   #
 
   #
-  # We utilise rely on "cat" for reading values from entries under /proc.
+  # We utilise rely on "cat" for reading values from entries under "/proc".
   # This is due to some problems with IO#read in Ruby and reading content of
   # the "proc" file system that was reported more than once in the past ...
   #
-  %x{ cat /proc/filesystems 2> /dev/null }.each do |l|
+  %x{ cat /proc/filesystems 2> /dev/null }.each do |line|
     # Remove bloat ...
-    l.strip!
+    line.strip!
 
     # Line of interest should not start with "nodev" ...
-    next if l.empty? or l.match(/^nodev/)
+    next if line.empty? or line.match(/^nodev/)
 
-    mutex.synchronize { filesystems << l }
+    mutex.synchronize { file_systems << line }
   end
 
   Facter.add('filesystems') do
     confine :kernel => :linux
-    setcode { filesystems.sort.join(',') }
+    setcode { file_systems.sort.join(',') }
   end
 end
 

@@ -15,7 +15,9 @@ if Facter.value(:kernel) == 'Linux'
 
   mutex = Mutex.new
 
-  disks      = []
+  # We store a list of disks (or block devices if you wish) here ...
+  disks = []
+  # We store a list of partitions on per-disk basis here ...
   partitions = Hash.new { |k,v| k[v] = [] }
 
   #
@@ -42,22 +44,22 @@ if Facter.value(:kernel) == 'Linux'
   exclude = Regexp.union(exclude.collect { |i| Regexp.new(i) })
 
   #
-  # We utilise rely on "cat" for reading values from entries under /proc.
+  # We utilise rely on "cat" for reading values from entries under "/proc".
   # This is due to some problems with IO#read in Ruby and reading content of
   # the "proc" file system that was reported more than once in the past ...
   #
-  %x{ cat /proc/partitions 2> /dev/null }.each do |l|
+  %x{ cat /proc/partitions 2> /dev/null }.each do |line|
     # Remove bloat ...
-    l.strip!
+    line.strip!
 
     # Line of interest should start with a number ...
-    next if l.empty? or l.match(/^[a-zA-Z]+/)
+    next if line.empty? or line.match(/^[a-zA-Z]+/)
 
     # We have something, so let us apply our device type filter ...
-    next if l.match(exclude)
+    next if line.match(exclude)
 
     # Only disks and partitions matter ...
-    partition = l.split(/\s+/)[3]
+    partition = line.split(/\s+/)[3]
 
     if partition.match(/^cciss/)
       #
