@@ -60,6 +60,7 @@ class StaticFact
   @@maximum_recursion_level = 8
   @@current_recursion_level = 0
 
+  # We store all the static facts here ...
   @@facts = {}
 
   class << self
@@ -69,6 +70,7 @@ class StaticFact
 
       # Parse and load facts from the origin file ...
       parse_file(file)
+
       @@facts
     end
 
@@ -109,6 +111,7 @@ class StaticFact
             files.each { |f| parse_file(f) }
           else
             @@mutex.synchronize { @@current_recursion_level += 1 }
+
             # Parse and load facts from an include file ...
             parse_file(file)
           end

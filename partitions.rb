@@ -17,6 +17,7 @@ if Facter.value(:kernel) == 'Linux'
 
   # We store a list of disks (or block devices if you wish) here ...
   disks = []
+
   # We store a list of partitions on per-disk basis here ...
   partitions = Hash.new { |k,v| k[v] = [] }
 
@@ -81,6 +82,7 @@ if Facter.value(:kernel) == 'Linux'
     mutex.synchronize do
       # All disks ... This might even be sda, sdaa, sdab, sdac, etc ...
       disks << disk
+
       # A disk is not a partition, therefore we ignore ...
       partitions[disk] << partition unless partition == disk
     end
