@@ -47,7 +47,7 @@ if Facter.value(:kernel) == 'Linux'
   #
 
   # Check whether there is anything to do at all ...
-  if File.exists?(bonding_directory)#('/proc/net/bonding')
+  if File.exists?(bonding_directory)
     # Process all known bonding interfaces ...
     Dir[search_pattern].each do |interface|
       # We store name of the slave interfaces on the side ...
@@ -116,29 +116,29 @@ if Facter.value(:kernel) == 'Linux'
         configuration[interface].update(:slaves => slaves)
       end
     end
-  end
 
-  # To ensure proper sorting order by the interface name ...
-  interfaces = configuration.keys.sort_by { |i| i.match(/\d+/)[0].to_i }
+    # To ensure proper sorting order by the interface name ...
+    interfaces = configuration.keys.sort_by { |i| i.match(/\d+/)[0].to_i }
 
-  Facter.add('bonding_interfaces') do
-    confine :kernel => :linux
-    setcode { interfaces.join(',') }
-  end
+    Facter.add('bonding_interfaces') do
+      confine :kernel => :linux
+      setcode { interfaces.join(',') }
+    end
 
-  # Process per-interface configuration and add fact about it ...
-  interfaces.each do |interface|
-    configuration[interface].each do |k,v|
-      # Check whether we deal with a list of slaves or not ...
-      value = v.is_a?(Array) ? v.join(',') : v
+    # Process per-interface configuration and add fact about it ...
+    interfaces.each do |interface|
+      configuration[interface].each do |k,v|
+        # Check whether we deal with a list of slaves or not ...
+        value = v.is_a?(Array) ? v.join(',') : v
 
-      # Make everything lower-case for consistency sake ...
-      value.tr!('A-Z', 'a-z')
+        # Make everything lower-case for consistency sake ...
+        value.tr!('A-Z', 'a-z')
 
-      # Add fact relevant to a particular bonding interface ...
-      Facter.add("bonding_#{interface}_#{k.to_s}") do
-        confine :kernel => :linux
-        setcode { value }
+        # Add fact relevant to a particular bonding interface ...
+        Facter.add("bonding_#{interface}_#{k.to_s}") do
+          confine :kernel => :linux
+          setcode { value }
+        end
       end
     end
   end
