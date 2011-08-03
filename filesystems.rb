@@ -15,6 +15,9 @@ if Facter.value(:kernel) == 'Linux'
   # We store a list of file systems here ...
   file_systems = []
 
+  # Support for the following might not be of interest ...
+  exclude = %w( fuseblk )
+
   #
   # Modern Linux kernels provide "/proc/filesystems" in the following format:
   #
@@ -51,6 +54,9 @@ if Facter.value(:kernel) == 'Linux'
   # devices like hard drives and media cards, and so on ...
   #
 
+  # Make regular expression form our patterns ...
+  exclude = Regexp.union(exclude.collect { |i| Regexp.new(i) })
+
   #
   # We utilise rely on "cat" for reading values from entries under "/proc".
   # This is due to some problems with IO#read in Ruby and reading content of
@@ -62,6 +68,9 @@ if Facter.value(:kernel) == 'Linux'
 
     # Line of interest should not start with "nodev" ...
     next if line.empty? or line.match(/^nodev/)
+
+    # We have something, so let us apply our device type filter ...
+    next if line.match(exclude)
 
     mutex.synchronize { file_systems << line }
   end
