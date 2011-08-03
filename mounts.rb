@@ -21,9 +21,7 @@ if Facter.value(:kernel) == 'Linux'
   # We store a list of mount points present in the system here ...
   devices = []
 
-  #
   # Support for the following might not be of interest ...
-  #
   exclude = %w( afs anon_inodefs aufs autofs bdev bind binfmt_.* cgroup cifs coda
     cpuset debugfs devfs devpts ecryptfs fd ftpfs fuse.* gvfs.* hugetlbfs inotifyfs
     iso9660 lustre.* mfs mqueue ncpfs NFS nfs.* none pipefs proc ramfs rootfs rpc_.*
