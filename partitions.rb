@@ -96,6 +96,10 @@ if Facter.value(:kernel) == 'Linux'
   partitions.each do |k,v|
     Facter.add("partitions_#{k}") do
       confine :kernel => :linux
+
+      # To ensure proper sorting order by the interface name ...
+      v = v.sort_by { |i| i.scan(/\d+/).shift.to_i }
+
       setcode { v.sort.join(',') }
     end
   end

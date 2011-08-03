@@ -110,7 +110,7 @@ if Facter.value(:kernel) == 'Linux'
       # and inactive bonding interface ...  In other words if the bonding
       # interface is "down" we still set relevant fact about its slaves ...
       #
-      slaves = slaves.empty? ? 'none' : slaves.sort_by { |i| i.match(/\d+/)[0].to_i }
+      slaves = slaves.empty? ? 'none' : slaves.sort_by { |i| i.scan(/\d+/).shift.to_i }
 
       mutex.synchronize do
         configuration[interface].update(:slaves => slaves)
@@ -118,7 +118,7 @@ if Facter.value(:kernel) == 'Linux'
     end
 
     # To ensure proper sorting order by the interface name ...
-    interfaces = configuration.keys.sort_by { |i| i.match(/\d+/)[0].to_i }
+    interfaces = configuration.keys.sort_by { |i| i.scan(/\d+/).shift.to_i }
 
     Facter.add('bonding_interfaces') do
       confine :kernel => :linux
