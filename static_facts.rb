@@ -129,7 +129,7 @@ end
 
 facts = StaticFact.load_facts
 
-unless facts.empty?
+if facts and not facts.empty?
   facts.each do |name, value|
     Facter.add(name) do
       setcode { value }
