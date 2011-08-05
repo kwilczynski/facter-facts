@@ -46,6 +46,34 @@ if Facter.value(:kernel) == 'Linux'
   #   Permanent HW addr: 00:25:b3:02:b3:18
   #
 
+  #
+  #  As per the "drivers/net/bonding/bond_main.c" in Linux kernel 2.6 and 3.0:
+  #
+  #  MODULE_PARM_DESC(mode, "Mode of operation; 0 for balance-rr, "
+  #                         "1 for active-backup, 2 for balance-xor, "
+  #                         "3 for broadcast, 4 for 802.3ad, 5 for balance-tlb, "
+  #                         "6 for balance-alb");
+  #
+  #  static const char *names[] = {
+  #	  [BOND_MODE_ROUNDROBIN] = "load balancing (round-robin)",
+  #	  [BOND_MODE_ACTIVEBACKUP] = "fault-tolerance (active-backup)",
+  #	  [BOND_MODE_XOR] = "load balancing (xor)",
+  #	  [BOND_MODE_BROADCAST] = "fault-tolerance (broadcast)",
+  #	  [BOND_MODE_8023AD] = "IEEE 802.3ad Dynamic link aggregation",
+  #	  [BOND_MODE_TLB] = "transmit load balancing",
+  #	  [BOND_MODE_ALB] = "adaptive load balancing",
+  #  };
+  #
+  bonding_mode = {
+    '^IEEE\s802\.3'                        => '802.3ad',
+    '^[aA]daptive\s[lL]oad'                => 'balance-alb',
+    '^[tT]transmit\s[lL]oad'               => 'balance-tlb',
+    '^[lL]oad\s.+\s\([xX]or\)'             => 'balance-xor',
+    '^[lL]oad\s.+\s\([rR]ound.+\)'         => 'balance-rr',
+    '^[fF]ault(\s|\-).+\s\([aA]ctive.+\)'  => 'active-backup',
+    '^[fF]ault(\s|\-).+\s\([bB]roadcast\)' => 'broadcast',
+  }
+
   # Check whether there is anything to do at all ...
   if File.exists?(bonding_directory)
     # Process all known bonding interfaces ...
@@ -70,6 +98,28 @@ if Facter.value(:kernel) == 'Linux'
 
         # Process configuration line by line ...
         case line
+        when /Bonding Mode:\s/
+          # Take the value only  ...
+          value = line.split(':')[1].strip
+
+          #
+          # We assume that we might not know the mode for some reason and if
+          # so, then we simply indicate that ...  This is to keep consistency
+          # with rest of the output from this particular fact ...
+          #
+          mode = 'unknown'
+
+          # Look-up against known operating modes ...  Fist match wins ...
+          bonding_mode.each do |k,v|
+            if value.match(k)
+              mode = v
+              break
+            end
+          end
+
+          mutex.synchronize do
+            configuration[interface].update(:mode => mode)
+          end
         when /Primary Slave:\s/
           # Take the value only  ...
           value = line.split(':')[1].strip
