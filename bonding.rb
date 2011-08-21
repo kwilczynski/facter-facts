@@ -18,7 +18,7 @@ if Facter.value(:kernel) == 'Linux'
   configuration = Hash.new { |k,v| k[v] = {} }
 
   # We search for the "/proc/net/bonding" directory and everything inside ...
-  bonding_directory = "/proc/net/bonding"
+  bonding_directory = '/proc/net/bonding'
   search_pattern    = "#{bonding_directory}/*"
 
   #
@@ -86,7 +86,7 @@ if Facter.value(:kernel) == 'Linux'
       # This is due to some problems with IO#read in Ruby and reading content of
       # the "proc" file system that was reported more than once in the past ...
       #
-      %x{ cat "#{interface}" 2> /dev/null }.each do |line|
+      %x{ cat #{interface} 2> /dev/null }.each do |line|
         # Remove bloat ...
         line.strip!
 
