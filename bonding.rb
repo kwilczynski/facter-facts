@@ -11,7 +11,6 @@ require 'thread'
 require 'facter'
 
 if Facter.value(:kernel) == 'Linux'
-
   mutex = Mutex.new
 
   # We capture per-bonding interface configuration here ...

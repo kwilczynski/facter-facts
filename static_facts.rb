@@ -59,7 +59,6 @@ require 'thread'
 require 'facter'
 
 class StaticFact
-
   @@mutex = Mutex.new
 
   # Sane default? Hope so ...
