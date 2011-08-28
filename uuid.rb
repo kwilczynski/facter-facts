@@ -1,11 +1,11 @@
 #
 # uuid.rb
 #
-# This fact provides unique system identification in form of an UUID
-# version 5 type identifier.  Currently we generate said UUID using
-# SHA-1 hash and rely on the "fqdn" (fully-qualified domain name) fact
-# availability since we use DNS name space when generating the UUID
-# version 5 to be compliment with the standards ...
+# This fact provides unique system identification in form of an RFC 4122
+# compliant UUID version 5 type identifier.  Currently we generate said
+# UUID using SHA-1 hash and rely on the "fqdn" (fully-qualified domain
+# name) fact availability since we use DNS name space when generating
+# the UUID version 5 to be compliment with the standards ...
 #
 # There is probably a room for discussion on the matter of which type
 # of UUID should be used i.e. UUID version 1 versus UUID version 5.
