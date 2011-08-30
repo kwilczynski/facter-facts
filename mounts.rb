@@ -12,7 +12,6 @@ require 'thread'
 require 'facter'
 
 if Facter.value(:kernel) == 'Linux'
-
   mutex = Mutex.new
 
   # We store a list of block devices hosting mount points here ...

@@ -9,7 +9,6 @@ require 'thread'
 require 'facter'
 
 if Facter.value(:kernel) == 'Linux'
-
   mutex = Mutex.new
 
   # We store a list of file systems here ...
