@@ -82,6 +82,7 @@ class StaticFact
     private
 
     def parse_file(file)
+      file      = File.expand_path(file)
       directory = File.dirname(file)
 
       # We cannot allow for endless recursion ...
@@ -90,46 +91,56 @@ class StaticFact
       # Since we include different files we check whether they still exist ...
       return unless File.exists?(directory) or File.exists?(file)
 
-      File.readlines(file).each do |line|
-        # Skip new lines, empty lines and comment lines ...
-        next if line.match(/^(\r\n|\n|\s*|#.*)$|^$/)
+      # Look for wild card pattern ...
+      files = Dir.glob(file)
 
-        # Remove bloat ...
-        line.strip!
+      # Got files?  Process each one of them as a separate case ...
+      files.each do |file|
+        file = File.expand_path(file)
 
-        if match = line.match(/^include\s+(.+)$/)
-          file = match[1].strip
-          file = File.expand_path(file)
+        # Skip non-existent file ...
+        next unless File.exists?(file)
 
-          # Look for wild card pattern ...
-          files = Dir.glob(file)
+        File.readlines(file).each do |line|
+          # Skip new lines, empty lines and comment lines ...
+          next if line.match(/^(\r\n|\n|\s*|#.*)$|^$/)
 
-          # There are no files to include ... so skip ...
-          next if files.empty?
+          # Remove bloat ...
+          line.strip!
 
-          if files.size > 1
-            #
-            # When simple pattern was used to include more files then
-            # we parse each and one of them but do not change current
-            # recursion level.  We consider this a "flat include".
-            #
-            files.each { |f| parse_file(f) }
-          else
-            @@mutex.synchronize { @@current_recursion_level += 1 }
+          if match = line.match(/^include\s+(.+)$/)
+            file = File.expand_path(match[1].strip)
 
-            # Parse and load facts from an include file ...
-            parse_file(file)
+            # Look for wild card pattern ...
+            files = Dir.glob(file)
+
+            # There are no files to include ... so skip ...
+            next if files.empty?
+
+            if files.size > 1
+              #
+              # When simple pattern was used to include more files then
+              # we parse each and one of them but do not change current
+              # recursion level.  We consider this a "flat include".
+              #
+              files.each { |f| parse_file(f) }
+            else
+              @@mutex.synchronize { @@current_recursion_level += 1 }
+
+              # Parse and load facts from an include file ...
+              parse_file(file)
+            end
+          elsif match = line.match(/^(.+)\s?=\s?(.+)$/)
+            # Since we allow spaces we have to clean it up a little ...
+            name  = match[1].strip
+            value = match[2].strip
+
+            # Both Facter.debug and Facter.warn work only when debugging is on.
+            Facter.warn "An attempt to re-define already defined " +
+              "fact: #{name}" if @@facts.keys.include?(name)
+
+            @@mutex.synchronize { @@facts.update(name => value) }
           end
-        elsif match = line.match(/^(.+)\s?=\s?(.+)$/)
-          # Since we allow spaces we have to clean it up a little ...
-          name  = match[1].strip
-          value = match[2].strip
-
-          # Both Facter.debug and Facter.warn work only when debugging is on.
-          Facter.warn "An attempt to re-define already defined " +
-            "fact: #{name}" if @@facts.keys.include?(name)
-
-          @@mutex.synchronize { @@facts.update(name => value) }
         end
       end
     end
