@@ -135,9 +135,21 @@ class StaticFact
             name  = match[1].strip
             value = match[2].strip
 
+            #
+            # A single Facter fact name cannot be a number.  This is
+            # because Puppet will turn every fact in a proper class
+            # property and in Ruby a property name cannot be a number
+            # not cannot start with a number.
+            #
+            if name.match(/^\d+/)
+              Facter.warn "A fact name cannot start with a number: #{name} = #{value}"
+              # Skip on the spot ...
+              next
+            end
+
             # Both Facter.debug and Facter.warn work only when debugging is on.
             Facter.warn "An attempt to re-define already defined " +
-              "fact: #{name}" if @@facts.keys.include?(name)
+              "fact: #{name} = #{value}" if @@facts.keys.include?(name)
 
             @@mutex.synchronize { @@facts.update(name => value) }
           end
