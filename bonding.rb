@@ -16,10 +16,6 @@ if Facter.value(:kernel) == 'Linux'
   # We capture per-bonding interface configuration here ...
   configuration = Hash.new { |k,v| k[v] = {} }
 
-  # We search for the "/proc/net/bonding" directory and everything inside ...
-  bonding_directory = '/proc/net/bonding'
-  search_pattern    = "#{bonding_directory}/*"
-
   #
   # Modern Linux kernels provide entries under "/proc/net/bonding" directory
   # in the following format.  An example of "/proc/net/bonding/bond0":
@@ -74,9 +70,10 @@ if Facter.value(:kernel) == 'Linux'
   }
 
   # Check whether there is anything to do at all ...
-  if File.exists?(bonding_directory)
-    # Process all known bonding interfaces ...
-    Dir[search_pattern].each do |interface|
+  if File.exists?('/proc/net/bonding')
+    # We search inside the "/proc/net/bonding" directory for all bonding
+    # interfaces and then process each one of them as a separate case ...
+    Dir['/proc/net/bonding/*'].each do |interface|
       # We store name of the slave interfaces on the side ...
       slaves = []
 
