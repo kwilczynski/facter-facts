@@ -61,7 +61,7 @@ if Facter.value(:kernel) == 'Linux'
   # This is due to some problems with IO#read in Ruby and reading content of
   # the "proc" file system that was reported more than once in the past ...
   #
-  %x{ cat /proc/filesystems 2> /dev/null }.each do |line|
+  Facter::Util::Resolution.exec('cat /proc/filesystems 2> /dev/null').each do |line|
     # Remove bloat ...
     line.strip!
 
