@@ -5,6 +5,7 @@
 # utilising Linux Containers (LXC) to host multiple light-weight containers.
 #
 
+require 'thread'
 require 'facter'
 
 if Facter.value(:kernel) == 'Linux'
