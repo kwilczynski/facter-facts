@@ -11,6 +11,9 @@ require 'facter'
 if Facter.value(:kernel) == 'Linux'
   mutex = Mutex.new
 
+  # A catch-all pattern to pick up "lxc" in case-insensitive manner ...
+  lxc_pattern = '^.*[Ll][Xx][Cc].*$'
+
   # We grab the class to use for any future calls to static "exec" method ...
   resolution = Facter::Util::Resolution
 
@@ -80,6 +83,9 @@ if Facter.value(:kernel) == 'Linux'
       # We capture whether system is a container or not here ...
       container = false
 
+      # We capture the container working directory here ...
+      container_directory = ''
+
       # Parse and process "init" process environment variables ...
       resolution.exec('cat /proc/1/environ 2> /dev/null').split("\000").each do |line|
         # Remove bloat ...
@@ -87,6 +93,12 @@ if Facter.value(:kernel) == 'Linux'
 
         # Process environment variable one by one ...
         case line
+        when /^PWD=.+$/
+          #
+          # We will use content of the "PWD" environment variable that is set
+          # when the container is created in order to tighten detection if possible ...
+          #
+          container_directory = line.split('=').last
         when /^container=.+$/
           # Get the value and therefore type of the container only ...
           type = line.split('=').last
@@ -112,6 +124,30 @@ if Facter.value(:kernel) == 'Linux'
         when /^LIBVIRT_LXC_(?:UUID|NAME)=.+$/
           container = true
           break
+        when /^_=.+$/
+          # Get the value only ...
+          value = line.split('=').last
+
+          #
+          # Fourth detection vector: check whether the "external command"
+          # variable (also known as the "_" variable) contains anything
+          # that spells out "lxc" (things like "./lxc", "/usr/bin/lxc-start")
+          # in an obvious manner and then attempt to correlate this with the
+          # content of the container working directory in order to tighten
+          # detection.  Otherwise we simply rely on "external command" variable
+          # which is not too great as it is quite weak ...
+          #
+          # This is purely to detect Linux Containers prior to version 0.7.4
+          # which do not expose "container=lxc" as a part of the environment
+          # for the "init" process ...
+          #
+          if value.match(lxc_pattern) and container_directory.match(lxc_pattern)
+            container = true
+            break
+          elsif value.match(lxc_pattern)
+            container = true
+            break
+          end
         else
           # Skip irrelevant entries ...
           next
