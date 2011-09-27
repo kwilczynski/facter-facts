@@ -20,6 +20,9 @@ if Facter.value(:kernel) == 'Linux'
   # We store a list of partitions on per-disk basis here ...
   partitions = Hash.new { |k,v| k[v] = [] }
 
+  # We store number of blocks per disk or partition.
+  blocks = Hash.new { |k,v| k[v] = [] }
+
   #
   # Support for the following might not be of interest ...
   #
@@ -58,8 +61,11 @@ if Facter.value(:kernel) == 'Linux'
     # We have something, so let us apply our device type filter ...
     next if line.match(exclude)
 
+    
+    block = line.split(/\s+/)[2]
     # Only disks and partitions matter ...
     partition = line.split(/\s+/)[3]
+    blocks[partition] = line.split(/\s+/)[2]
 
     if partition.match(/^cciss/)
       #
@@ -100,6 +106,14 @@ if Facter.value(:kernel) == 'Linux'
       v = v.sort_by { |i| i.scan(/\d+/).shift.to_i }
 
       setcode { v.sort.join(',') }
+    end
+  end
+
+  blocks.each do |k,v|
+    Facter.add("blocks_#{k}") do
+      confine :kernel => :linux
+      # To ensure proper sorting order by the interface name ...
+      setcode {"#{v}"}
     end
   end
 end
