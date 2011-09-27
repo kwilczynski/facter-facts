@@ -133,9 +133,10 @@ if Facter.value(:kernel) == 'Linux'
           # variable (also known as the "_" variable) contains anything
           # that spells out "lxc" (things like "./lxc", "/usr/bin/lxc-start")
           # in an obvious manner and then attempt to correlate this with the
-          # content of the container working directory in order to tighten
-          # detection.  Otherwise we simply rely on "external command" variable
-          # which is not too great as it is quite weak ...
+          # content of the container working directory (as per the "PWD"
+          # environment variable) in order to tighten detection.  Otherwise
+          # we simply rely on "external command" variable which is not too
+          # great as it is quite weak ...
           #
           # This is purely to detect Linux Containers prior to version 0.7.4
           # which do not expose "container=lxc" as a part of the environment
