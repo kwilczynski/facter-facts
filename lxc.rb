@@ -36,7 +36,7 @@ if Facter.value(:kernel) == 'Linux'
   cgroup = resolution.exec('cat /proc/1/cgroup 2> /dev/null')
 
   # Anything to do?  Control Group information available?
-  if cgroup.size > 0
+  if cgroup and cgroup.size > 0
     #
     # First detection vector: check how Control Groups data looks like for
     # the "init" process (can actually be any process including "self") as
