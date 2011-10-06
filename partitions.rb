@@ -1,7 +1,8 @@
 #
 # partitions.rb
 #
-# This fact provides an alphabetic list of partitions per disk and disks.
+# This fact provides an alphabetic list of blocks per disk and/or partition,
+# partitions per disk and disks.
 #
 # We support most of generic SATA and PATA disks, plus Hewlett-Packard
 # Smart Array naming format ...  This also should work for systems running
