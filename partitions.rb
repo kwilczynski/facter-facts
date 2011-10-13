@@ -30,7 +30,7 @@ if Facter.value(:kernel) == 'Linux'
   # MMC is Multi Media Card which can be either SD or microSD, etc ...
   # MTD is Memory Technology Device also known as Flash Memory
   #
-  exclude = %w( backdev.* dm loop md mmcblk mtdblock ramzswap )
+  exclude = %w(backdev.* dm loop md mmcblk mtdblock ramzswap)
 
   #
   # Modern Linux kernels provide "/proc/partitions" in the following format:
@@ -52,7 +52,7 @@ if Facter.value(:kernel) == 'Linux'
   # This is due to some problems with IO#read in Ruby and reading content of
   # the "proc" file system that was reported more than once in the past ...
   #
-  Facter::Util::Resolution.exec('cat /proc/partitions 2> /dev/null').each do |line|
+  Facter::Util::Resolution.exec('cat /proc/partitions 2> /dev/null').each_line do |line|
     # Remove bloat ...
     line.strip!
 

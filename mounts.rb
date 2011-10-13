@@ -21,10 +21,11 @@ if Facter.value(:kernel) == 'Linux'
   devices = []
 
   # Support for the following might not be of interest ...
-  exclude = %w( afs anon_inodefs aufs autofs bdev bind binfmt_.* cgroup cifs coda
-    cpuset debugfs devfs devpts ecryptfs fd ftpfs fuse.* gvfs.* hugetlbfs inotifyfs
-    iso9660 lustre.* mfs mqueue ncpfs NFS nfs.* none pipefs proc ramfs rootfs rpc_.*
-    securityfs shfs shm smbfs sockfs sysfs tmpfs udev udf unionfs usbfs )
+  exclude = %w(afs anon_inodefs aufs autofs bdev bind binfmt_.* cgroup cifs
+               coda cpuset debugfs devfs devpts ecryptfs fd ftpfs fuse.* gvfs.*
+               hugetlbfs inotifyfs iso9660 lustre.* mfs mqueue ncpfs NFS nfs.*
+               none pipefs proc ramfs rootfs rpc_.* securityfs shfs shm smbfs
+               sockfs sysfs tmpfs udev udf unionfs usbfs)
 
   #
   # Modern Linux kernels provide "/proc/mounts" in the following format:
@@ -79,7 +80,7 @@ if Facter.value(:kernel) == 'Linux'
   # This is due to some problems with IO#read in Ruby and reading content of
   # the "proc" file system that was reported more than once in the past ...
   #
-  Facter::Util::Resolution.exec('cat /proc/mounts 2> /dev/null').each do |line|
+  Facter::Util::Resolution.exec('cat /proc/mounts 2> /dev/null').each_line do |line|
     # Remove bloat ...
     line.strip!
 

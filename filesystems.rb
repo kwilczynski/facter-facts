@@ -15,7 +15,7 @@ if Facter.value(:kernel) == 'Linux'
   file_systems = []
 
   # Support for the following might not be of interest ...
-  exclude = %w( fuseblk )
+  exclude = %w(fuseblk)
 
   #
   # Modern Linux kernels provide "/proc/filesystems" in the following format:
@@ -61,7 +61,7 @@ if Facter.value(:kernel) == 'Linux'
   # This is due to some problems with IO#read in Ruby and reading content of
   # the "proc" file system that was reported more than once in the past ...
   #
-  Facter::Util::Resolution.exec('cat /proc/filesystems 2> /dev/null').each do |line|
+  Facter::Util::Resolution.exec('cat /proc/filesystems 2> /dev/null').each_line do |line|
     # Remove bloat ...
     line.strip!
 
