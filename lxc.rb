@@ -180,3 +180,4 @@ if Facter.value(:kernel) == 'Linux'
 end
 
 # vim: set ts=2 sw=2 et :
+# encoding: utf-8
