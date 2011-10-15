@@ -1,9 +1,9 @@
-require 'facter'
-require 'facter/manufacturer'
-
 #
 # bios_and_system.rb
 #
+
+require 'facter'
+require 'facter/manufacturer'
 
 query = {
   'BIOS [Ii]nformation' => [
