@@ -18,6 +18,19 @@ if Facter.value(:kernel) == 'Linux'
   users = []
 
   #
+  # Modern Linux distributions provide "/etc/passwd" in the following format:
+  #
+  #  root:x:0:0:root:/root:/bin/bash
+  #  (...)
+  #
+  # Above line has the follwing fields separated by the ":" (colon):
+  #
+  #  <user name>:<password>:<user ID>:<group ID>:<comment>:<home directory>:<command shell>
+  #
+  # We only really care about "user name" and "user ID" fields.
+  #
+
+  #
   # We use "getent" binary first if possible to look-up what users are currently
   # available on system.  This is possibly due to an issue in Puppet "user" type
   # which causes Facter to delay every Puppet run substantially especially when
@@ -33,21 +46,10 @@ if Facter.value(:kernel) == 'Linux'
     # the "proc" file system that was reported more than once in the past ...
     #
     Facter::Util::Resolution.exec('/usr/bin/getent passwd').each_line do |line|
-      # Remove bloat!
+      # Remove bloat ...
       line.strip!
 
-      #
-      # Modern Linux distributions provide "/etc/passwd" in the following format:
-      #
-      #  root:x:0:0:root:/root:/bin/bash
-      #  (...)
-      #
-      # Above line has the follwing fields separated by the ":" (colon):
-      #
-      #  <user name>:<password>:<user ID>:<group ID>:<comment>:<home directory>:<command shell>
-      #
-      # We only really care about "user name" and "user ID" fields.
-      #
+      # Turn line into a set of tokens ...
       user = line.split(':')
 
       # Add user to list only if the user is not an essential system user ...

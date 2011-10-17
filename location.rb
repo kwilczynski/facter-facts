@@ -28,17 +28,18 @@ if Facter.value(:kernel) == 'Linux'
   # This is due to some problems with IO#read in Ruby and reading content of
   # the "proc" file system that was reported more than once in the past ...
   #
-  # This will only select first matching IP address and in that regards
-  # it is very similar to the "ipaddress" fact from Facter ...
-  #
   Facter::Util::Resolution.exec('/sbin/ifconfig 2> /dev/null').each_line do |line|
-    # Remove bloat!
+    # Remove bloat ...
     line.strip!
 
     # Skip new and empty lines ...
     next if line.match(/^(\r\n|\n|\s*)$|^$/)
 
-    # Process output and capture details about IP addresses only ...
+    #
+    # Process output and capture details about IP addresses only.  This will
+    # select only the first matching IP address and in that regards it is very
+    # similar to how IP address fact in Facter works ...
+    #
     if match = line.match(/inet addr:((?:[0-9]+\.){3}[0-9]+)/)
       this_address = match[1]
       # We are not interested in local host ...

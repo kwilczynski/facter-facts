@@ -1,6 +1,10 @@
 #
 # bios_and_system.rb
 #
+# This fact provides more details about underlying platform in terms of
+# BIOS and System Information data that can be taken from the DMI (Direct
+# Media Interface) space.
+#
 
 require 'facter'
 require 'facter/manufacturer'
