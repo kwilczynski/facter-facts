@@ -20,6 +20,7 @@
 # UUID generation and example implementation.
 #
 
+require 'thread'
 require 'facter'
 
 if Facter.value(:kernel) == 'Linux'
