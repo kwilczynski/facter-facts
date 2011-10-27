@@ -54,10 +54,13 @@ if Facter.value(:kernel) == 'Linux'
     end
   end
 
-  Facter.add('default_gateway') do
-    confine :kernel => :linux
-    # Reverse from network order ...
-    setcode { gateway.reverse.join('.') }
+  # Sometimes we do not have the default route set at all ...
+  if gateway and not gateway.empty?
+    Facter.add('default_gateway') do
+      confine :kernel => :linux
+      # Reverse from network order ...
+      setcode { gateway.reverse.join('.') }
+    end
   end
 end
 
