@@ -10,7 +10,6 @@
 
 require 'thread'
 require 'facter'
-require 'puppet'
 
 if Facter.value(:kernel) == 'Linux'
   mutex = Mutex.new
