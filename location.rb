@@ -23,6 +23,10 @@ if Facter.value(:kernel) == 'Linux'
   # We will store IP address of the machine we run on here ...
   this_address = ''
 
+  # We work-around an issue in Facter #10278 by forcing locale settings ...
+  ENV['LANG']   = 'POSIX'
+  ENV['LC_ALL'] = 'POSIX'
+
   #
   # We utilise rely on "cat" for reading values from entries under "/proc".
   # This is due to some problems with IO#read in Ruby and reading content of

@@ -40,6 +40,10 @@ if Facter.value(:kernel) == 'Linux'
   # fall-back to using Puppet "user" type ...
   #
   if File.exists?('/usr/bin/getent')
+    # We work-around an issue in Facter #10278 by forcing locale settings ...
+    ENV['LANG']   = 'POSIX'
+    ENV['LC_ALL'] = 'POSIX'
+
     #
     # We utilise rely on "cat" for reading values from entries under "/proc".
     # This is due to some problems with IO#read in Ruby and reading content of
