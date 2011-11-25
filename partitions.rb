@@ -45,7 +45,7 @@ if Facter.value(:kernel) == 'Linux'
   #
 
   # Make regular expression form our patterns ...
-  exclude = Regexp.union(exclude.collect { |i| Regexp.new(i) })
+  exclude = Regexp.union(*exclude.collect { |i| Regexp.new(i) })
 
   #
   # We utilise rely on "cat" for reading values from entries under "/proc".

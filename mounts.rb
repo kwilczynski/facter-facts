@@ -48,7 +48,7 @@ if Facter.value(:kernel) == 'Linux'
   #
 
   # Make regular expression form our patterns ...
-  exclude = Regexp.union(exclude.collect { |i| Regexp.new(i) })
+  exclude = Regexp.union(*exclude.collect { |i| Regexp.new(i) })
 
   # List of numeric identifiers with their corresponding canonical forms ...
   known_devices = Dir['/dev/*'].inject({}) do |k,v|
