@@ -2,9 +2,10 @@
 # xtables_version.rb
 #
 # This fact provides version of the user-space utilities like "iptables",
-# "ebtables" and "arptables" when present.  All these tools interact with
-# modern Linux Kernel and its firewall called Netfilter (the kernel-space
-# component) and work either in Layer 2 or Layer 3 OSI networking model ...
+# "ip6tables", "ebtables" and "arptables" when present.  All these tools
+# interact with modern Linux Kernel and its firewall called Netfilter (the
+# kernel-space component) and work either in Layer 2 and/or Layer 3 OSI
+# networking model ...
 #
 # Known utilities, their names and short description:
 #
@@ -21,10 +22,10 @@ if Facter.value(:kernel) == 'Linux'
   resolution = Facter::Util::Resolution
 
   #
-  # Modern Linux distributions offer "iptables", "ebtables" and "arptables"
-  # binaries from under the "/sbin" directory.  Therefore we will simply use
-  # "/sbin/iptables" (similarly for "ebtables", etc ...) when asking for the
-  # software version ...
+  # Modern Linux distributions offer "iptables", "ip6tables", "ebtables" and
+  # "arptables" binaries from under the "/sbin" directory.  Therefore we will
+  # simply use "/sbin/iptables" (similarly for "ebtables", etc ...) when asking
+  # for the software version ...
   #
 
   # We work-around an issue in Facter #10278 by forcing locale settings ...
@@ -37,6 +38,16 @@ if Facter.value(:kernel) == 'Linux'
       confine :kernel => :linux
       setcode do
         version = resolution.exec('/sbin/iptables -V 2> /dev/null').strip
+        version.split(/\s+v?/)[1]
+      end
+    end
+  end
+
+  if File.exists?('/sbin/ip6tables')
+    Facter.add('ip6tables_version') do
+      confine :kernel => :linux
+      setcode do
+        version = resolution.exec('/sbin/ip6tables -V 2> /dev/null').strip
         version.split(/\s+v?/)[1]
       end
     end
