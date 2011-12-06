@@ -41,11 +41,14 @@ if Facter.value(:kernel) == 'Linux'
     # Convert values to a pair of bytes ...
     values.collect! { |i| i.to_a.pack('H*') }
 
+    # Add all the bytes together ...
+    sum = values[0].unpack('C4').inject { |i, j| i + j }
+
     #
     # A value (actually, a sum if you wish) of zero will indicate that we have
     # the default gateway.  Anything else indicates known destination ...
     #
-    unless values[0].unpack('C4').inject(:+) > 0
+    unless sum > 0
       # A default gateway there?  Convert back to Integer ...
       gateway = values[1].unpack('C4')
     else
