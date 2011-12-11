@@ -98,7 +98,7 @@ if Facter.value(:kernel) == 'Linux'
     #
     # When tere are any spaces in the mount point name then Kernel will
     # replace them with as octal "\040" (which is 32 decimal).  We have
-    # to accomodate for this and convert them back into proper spaces ...
+    # to accommodate for this and convert them back into proper spaces ...
     #
     # An example of such case:
     #
