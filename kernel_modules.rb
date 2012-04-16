@@ -96,7 +96,13 @@ if Facter.value(:kernel) == 'Linux'
         # interested only in modules that are loaded (or "live" if you wish) ...
         #
         if File.exists?(state_file)
-          modules_list << name if File.read(state_file).match(/^[Ll]ive/)
+          #
+          # We utilise rely on "cat" for reading values from entries under "/proc".
+          # This is due to some problems with IO#read in Ruby and reading content of
+          # the "proc" file system that was reported more than once in the past ...
+          #
+          data = Facter::Util::Resolution.exec("cat #{state_file} 2> /dev/null")
+          modules_list << name if data.match(/^[Ll]ive/)
         end
       end
     end
