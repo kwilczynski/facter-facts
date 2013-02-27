@@ -10,6 +10,7 @@ require 'facter'
 if Facter.value(:kernel) == 'Linux'
   # We store information about the default gateway here ...
   gateway = ''
+  gateway_interface = ''
 
   #
   # Modern Linux kernels provide "/proc/net/route" in the following format:
@@ -36,13 +37,14 @@ if Facter.value(:kernel) == 'Linux'
     next if line.match(/^(\r\n|\n|\s*)$|^$/)
 
     # Retrieve destination and gateway ...
-    values = line.split("\t").slice(1, 2)
+    values = line.split("\t")[0..2]
 
     # Convert values to a pair of bytes ...
+    interface = values[0]
     values.collect! { |i| i.to_a.pack('H*') }
 
     # Add all the bytes together ...
-    sum = values[0].unpack('C4').inject { |i, j| i + j }
+    sum = values[1].unpack('C4').inject { |i, j| i + j }
 
     #
     # A value (actually, a sum if you wish) of zero will indicate that we have
@@ -50,7 +52,8 @@ if Facter.value(:kernel) == 'Linux'
     #
     unless sum > 0
       # A default gateway there?  Convert back to Integer ...
-      gateway = values[1].unpack('C4')
+      gateway = values[2].unpack('C4')
+      gateway_interface = interface
     else
       # Skip irrelevant entries ...
       next
@@ -63,6 +66,12 @@ if Facter.value(:kernel) == 'Linux'
       confine :kernel => :linux
       # Reverse from network order ...
       setcode { gateway.reverse.join('.') }
+    end
+  end
+  if gateway_interface and not gateway_interface.empty?
+    Facter.add('default_gateway_interface') do
+      confine :kernel => :linux
+      setcode { gateway_interface }
     end
   end
 end
