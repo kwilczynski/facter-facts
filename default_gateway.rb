@@ -41,7 +41,7 @@ if Facter.value(:kernel) == 'Linux'
 
     # Convert values to a pair of bytes ...
     interface = values[0]
-    values.collect! { |i| i.to_a.pack('H*') }
+    values.collect! { |i| [i].pack('H*') }
 
     # Add all the bytes together ...
     sum = values[1].unpack('C4').inject { |i, j| i + j }
