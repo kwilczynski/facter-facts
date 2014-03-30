@@ -6,12 +6,7 @@
 # CLOSE_WAIT and LISTEN; which are the most common known states ...
 #
 
-require 'thread'
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
-  mutex = Mutex.new
-
   # We store number of connections of each type here ...
   connections = { :established => 0,
                   :time_wait   => 0,
@@ -70,21 +65,13 @@ if Facter.value(:kernel) == 'Linux'
     #
     case state.hex
     when 1
-      mutex.synchronize do
-        connections[:established] += 1
-      end
+      connections[:established] += 1
     when 6
-      mutex.synchronize do
-        connections[:time_wait] += 1
-      end
+      connections[:time_wait] += 1
     when 8
-      mutex.synchronize do
-        connections[:close_wait] += 1
-      end
+      connections[:close_wait] += 1
     when 10
-      mutex.synchronize do
-        connections[:listen] += 1
-      end
+      connections[:listen] += 1
     else
       # Skip irrelevant states ...
       next

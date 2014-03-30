@@ -7,12 +7,7 @@
 # active slave as well as a list of slaves interfaces attached ...
 #
 
-require 'thread'
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
-  mutex = Mutex.new
-
   # We capture per-bonding interface configuration here ...
   configuration = Hash.new { |k,v| k[v] = {} }
 
@@ -113,37 +108,22 @@ if Facter.value(:kernel) == 'Linux'
             end
           end
 
-          mutex.synchronize do
-            configuration[interface].update(:mode => mode)
-          end
+          configuration[interface].update(:mode => mode)
         when /Primary Slave:\s/
           # Take the value only  ...
           value = line.split(':')[1].strip
-
-          mutex.synchronize do
-            configuration[interface].update(:primary_slave => value)
-          end
+          configuration[interface].update(:primary_slave => value)
         when /Currently Active Slave:\s/
           # Take the value only ...
           value = line.split(':')[1].strip
-
-          mutex.synchronize do
-            configuration[interface].update(:active_slave => value)
-          end
+          configuration[interface].update(:active_slave => value)
         when /MII Status:\s/
           # Take the value only ...
           value = line.split(':')[1].strip
-
-          mutex.synchronize do
-            configuration[interface].update(:status => value)
-          end
+          configuration[interface].update(:status => value)
         when /Slave Interface:\s/
           # Take the value only ...
-          value = line.split(':')[1].strip
-
-          mutex.synchronize do
-            slaves << value
-          end
+          slaves << line.split(':')[1].strip
         else
           # Skip irrelevant entries ...
           next
@@ -158,9 +138,7 @@ if Facter.value(:kernel) == 'Linux'
       #
       slaves = slaves.empty? ? 'none' : slaves.sort_by { |i| i.scan(/\d+/).shift.to_i }
 
-      mutex.synchronize do
-        configuration[interface].update(:slaves => slaves)
-      end
+      configuration[interface].update(:slaves => slaves)
     end
 
     # To ensure proper sorting order by the interface name ...

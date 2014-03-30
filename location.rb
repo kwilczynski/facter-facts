@@ -2,8 +2,6 @@
 # location.rb
 #
 
-require 'facter'
-
 #
 # We choose location based on simple network to country look-up were we
 # use common ISO country codes as follows ...
@@ -18,14 +16,13 @@ location = {
 
 if Facter.value(:kernel) == 'Linux'
   # When we cannot match anything this will stand-out ...
-  this_country, this_location = 'UNKNOWN', 'UNKNOWN'
+  this_country, this_location = 'unknown', 'unknown'
 
   # We will store IP address of the machine we run on here ...
   this_address = ''
 
   # We work-around an issue in Facter #10278 by forcing locale settings ...
-  ENV['LANG']   = 'POSIX'
-  ENV['LC_ALL'] = 'POSIX'
+  ENV['LC_ALL'] = 'C'
 
   #
   # We utilise rely on "cat" for reading values from entries under "/proc".

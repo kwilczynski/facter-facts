@@ -7,13 +7,9 @@
 # below that is nothing of our concern ...
 #
 
-require 'thread'
-require 'facter'
 require 'puppet'
 
 if Facter.value(:kernel) == 'Linux'
-  mutex = Mutex.new
-
   # We store a list of users which are not an essential systems users here ...
   users = []
 
@@ -41,8 +37,7 @@ if Facter.value(:kernel) == 'Linux'
   #
   if File.exists?('/usr/bin/getent')
     # We work-around an issue in Facter #10278 by forcing locale settings ...
-    ENV['LANG']   = 'POSIX'
-    ENV['LC_ALL'] = 'POSIX'
+    ENV['LC_ALL'] = 'C'
 
     #
     # We utilise rely on "cat" for reading values from entries under "/proc".
@@ -64,10 +59,8 @@ if Facter.value(:kernel) == 'Linux'
       # Get details about the user from the corresponding instance ...
       instance = user.retrieve
 
-      mutex.synchronize do
-        # Add user to list only if the user is not an essential system user ...
-        users << user.name unless instance[user.property(:uid)].to_i < 500
-      end
+      # Add user to list only if the user is not an essential system user ...
+      users << user.name unless instance[user.property(:uid)].to_i < 500
     end
   end
 

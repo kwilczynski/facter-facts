@@ -5,8 +5,6 @@
 # the underlying file system ...
 #
 
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
   #
   # We add our fact as single word "rubybinary" instead of "ruby_binary"
@@ -15,7 +13,7 @@ if Facter.value(:kernel) == 'Linux'
   Facter.add('rubybinary') do
     confine :kernel => :linux
     setcode do
-      config = Config::CONFIG
+      config = RbConfig::CONFIG
       File.join(config['bindir'], config['ruby_install_name'])
     end
   end

@@ -8,12 +8,7 @@
 # simply an improvement upon it.
 #
 
-require 'thread'
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
-  mutex = Mutex.new
-
   # We store the list of local volumes here ...
   volumes = []
 
@@ -30,8 +25,7 @@ if Facter.value(:kernel) == 'Linux'
   #
 
   # We work-around an issue in Facter #10278 by forcing locale settings ...
-  ENV['LANG']   = 'POSIX'
-  ENV['LC_ALL'] = 'POSIX'
+  ENV['LC_ALL'] = 'C'
 
   #
   # We utilise rely on "cat" for reading values from entries under "/proc".
@@ -49,10 +43,7 @@ if Facter.value(:kernel) == 'Linux'
     next if line.match(/^(\r\n|\n|\s*)$|^$/)
 
     # Parse line and retrieve name of the local volume ...
-    volume = line.split(' ')[5].strip
-
-    # Add single volume to the list ...
-    mutex.synchronize { volumes << volume }
+    volumes << line.split(' ')[5].strip
   end
 
   Facter.add('local_volumes') do

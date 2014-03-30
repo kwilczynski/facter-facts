@@ -5,12 +5,7 @@
 # utilising Linux Containers (LXC) to host multiple light-weight containers.
 #
 
-require 'thread'
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
-  mutex = Mutex.new
-
   # A catch-all pattern to pick up "lxc" in case-insensitive manner ...
   lxc_pattern = '^.*[Ll][Xx][Cc].*$'
 
@@ -62,14 +57,11 @@ if Facter.value(:kernel) == 'Linux'
       # as it would be a security risk, and it us uncommon for it to have
       # host-side packages installed ...
       #
-      if mounts.collect { |mount| Dir.glob(File.join(mount, '*')).size > 0 }.any? \
-         and binaries.collect { |binary| File.exists?(binary) }.any?
+      mounts_present   = mounts.detect {|m| Dir.glob(File.join(m, '*')).size > 0 } ? true : false
+      binaries_present = binaries.detect {|b| File.exists?(b) } ? true : false
 
-        mutex.synchronize do
-          # We are a host system ...
-          lxc = [false, 'host']
-        end
-      end
+      # We are a host system ...
+      lxc = [false, 'host'] if mounts_present and binaries_present
     elsif cgroup.match(/^\d+:.+:\/.+$/)
       #
       # Third detection vector: check whether current system is a container.
@@ -156,12 +148,7 @@ if Facter.value(:kernel) == 'Linux'
       end
 
       # Linux Containers (LXC) container at all?
-      if container
-        mutex.synchronize do
-          # We are a container ...
-          lxc = [true, 'container']
-        end
-      end
+      lxc = [true, 'container'] if container
     end
 
     # All set?  Can we safely populate facts with values?

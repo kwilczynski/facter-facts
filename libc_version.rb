@@ -17,8 +17,6 @@
 # Please note, that at this point in time there is no support for uClibc ...
 #
 
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
   # We grab the class to use for any future calls to static "exec" method ...
   resolution = Facter::Util::Resolution
@@ -29,21 +27,19 @@ if Facter.value(:kernel) == 'Linux'
   #
   result = Proc.new do
     # Both "libc" and "ldd" are on available from given locations in 99% of cases ...
-    libc_library = '/lib/libc.so.6'
-    ldd_binary   = '/usr/bin/ldd'
+    libc_library = %w(
+      /lib/libc.so.6
+      /lib/i386-linux-gnu/libc.so.6
+      /lib/x86_64-linux-gnu/libc.so.6
+    ).detect {|f| File.exists?(f) }
+
+    ldd_binary = '/usr/bin/ldd'
 
     # We set defaults in case we cannot resolve relevant values ...
     version = 'unknown'
     variant = 'unknown'
 
     if File.exists?(libc_library)
-
-      # In 99.9% of cases "/lib/libc.so.6" will be a symbolic link, and we resolve ...
-      if File.symlink?(libc_library)
-        libc_library = File.readlink(libc_library)
-        libc_library = File.join('/lib/', libc_library)
-      end
-
       #
       # Assuming that "libc" has executable bit set, then we run it and parse
       # results where only fist line is what matters as it has the version and
@@ -59,7 +55,7 @@ if Facter.value(:kernel) == 'Linux'
       header = header.split(/\n/).first
 
       # Parse version and set variant ...
-      if match = header.match(/^GNU\sC.+\s\(E.+\).+\s([\d\.]+)\S/)
+      if match = header.match(/^GNU\sC.+\s\(.*?E.+\).+\s([i\d\.]+)\S/)
         version = match[1]
         variant = :eglibc
       elsif match = header.match(/^GNU\sC.+\s([\d\.]+)\S/)
@@ -83,7 +79,7 @@ if Facter.value(:kernel) == 'Linux'
       header = header.split(/\n/).first
 
       # Parse version and set variant ...
-      if match = header.match(/^ldd\s\(E.+\)\s([\d\.]+)\S?/)
+      if match = header.match(/^ldd\s\(.*?E.+\)\s([\d\.]+)\S?/)
         version = match[1]
         variant = :eglibc
       elsif match = header.match(/^ldd\s\(G.+\)\s([\d\.]+)\S?/)

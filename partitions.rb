@@ -9,12 +9,7 @@
 # as Virtual Machine guest at least for Xen and KVM ...
 #
 
-require 'thread'
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
-  mutex = Mutex.new
-
   # We store a list of disks (or block devices if you wish) here ...
   disks = []
 
@@ -91,16 +86,14 @@ if Facter.value(:kernel) == 'Linux'
     # We have something rather odd that did not parse at all, so ignore ...
     next if disk.empty?
 
-    mutex.synchronize do
-      # All disks ... This might even be sda, sdaa, sdab, sdac, etc ...
-      disks << disk
+    # All disks ... This might even be sda, sdaa, sdab, sdac, etc ...
+    disks << disk
 
-      # Store details about number of blocks per disk and/or partition ...
-      blocks[partition] = block
+    # Store details about number of blocks per disk and/or partition ...
+    blocks[partition] = block
 
-      # A disk is not a partition, therefore we ignore ...
-      partitions[disk] << partition unless partition == disk
-    end
+    # A disk is not a partition, therefore we ignore ...
+    partitions[disk] << partition unless partition == disk
   end
 
   Facter.add('disks') do

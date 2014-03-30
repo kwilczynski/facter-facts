@@ -59,8 +59,6 @@ require 'thread'
 require 'facter'
 
 class StaticFact
-  @@mutex = Mutex.new
-
   # Sane default? Hope so ...
   @@maximum_recursion_level = 8
   @@current_recursion_level = 0
@@ -125,7 +123,7 @@ class StaticFact
               #
               files.each { |f| parse_file(f) }
             else
-              @@mutex.synchronize { @@current_recursion_level += 1 }
+              @@current_recursion_level += 1
 
               # Parse and load facts from an include file ...
               parse_file(file)
@@ -151,7 +149,7 @@ class StaticFact
             Facter.warn "An attempt to re-define already defined " +
               "fact: #{name} = #{value}" if @@facts.keys.include?(name)
 
-            @@mutex.synchronize { @@facts.update(name => value) }
+            @@facts.update(name => value)
           end
         end
       end

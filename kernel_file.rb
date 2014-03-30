@@ -8,7 +8,6 @@
 # lower than the constant "NR_OPEN" denoting Kernel enforced upper-limit) and
 # which is probably the most useful piece of information in its own right ...
 #
-require 'facter'
 
 if Facter.value(:kernel) == 'Linux'
   #

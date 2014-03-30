@@ -15,8 +15,6 @@
 #   arptables - "ARP table administration";
 #
 
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
   # We grab the class to use for any future calls to static "exec" method ...
   resolution = Facter::Util::Resolution
@@ -29,8 +27,7 @@ if Facter.value(:kernel) == 'Linux'
   #
 
   # We work-around an issue in Facter #10278 by forcing locale settings ...
-  ENV['LANG']   = 'POSIX'
-  ENV['LC_ALL'] = 'POSIX'
+  ENV['LC_ALL'] = 'C'
 
   # Both "iptables" and "ip6tables" will have the same version in 99% of cases ...
   if File.exists?('/sbin/iptables')

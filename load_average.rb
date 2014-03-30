@@ -13,8 +13,7 @@ if Facter.value(:kernel) == 'Linux'
   # This is due to some problems with IO#read in Ruby and reading content of
   # the "proc" file system that was reported more than once in the past ...
   #
-  data = Facter::Util::Resolution.exec('cat /proc/loadavg 2> /dev/null')
-  data = data.split(' ')
+  data = Facter::Util::Resolution.exec('cat /proc/loadavg 2> /dev/null').split(' ')
 
   #
   # Modern Linux kernels provide "/proc/loadavg" in the following format:

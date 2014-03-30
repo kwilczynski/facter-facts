@@ -20,12 +20,7 @@
 # UUID generation and example implementation.
 #
 
-require 'thread'
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
-  mutex = Mutex.new
-
   # We change status on any errors ...
   errors = false
 
@@ -43,6 +38,21 @@ if Facter.value(:kernel) == 'Linux'
   # Check for potential errors before continuing ...
   unless errors
     #
+    # The String#bytes method was added in 1.8.7 (and now is present in any
+    # recent version) therefore we monkey-patch String if such is missing ...
+    #
+    unless String.method_defined?(:bytes)
+      class String
+        def bytes(&block)
+          # This should not be necessary, really ...
+          require 'enumerator'
+          return to_enum(:each_byte) unless block_given?
+          each_byte(&block)
+        end
+      end
+    end
+
+    #
     # This is the UUID version 5 type DNS name space which is as follows:
     #
     #  6ba7b810-9dad-11d1-80b4-00c04fd430c8
@@ -55,14 +65,16 @@ if Facter.value(:kernel) == 'Linux'
     # Resolve the "fqdn" fact and therefore get fully-qualified domain name ...
     domain = Facter.value('fqdn')
 
-    mutex.synchronize do
-      # Concatenate appropriate UUID name space with the domain name given ...
-      sha1.update(uuid_name_space_dns)
-      sha1.update(domain)
-    end
+    # Concatenate appropriate UUID name space with the domain name given ...
+    sha1.update(uuid_name_space_dns)
+    sha1.update(domain)
 
-    # We only need to use first 16 bytes ...
-    bytes = sha1.digest[0, 16]
+    #
+    # We only need to use first 16 bytes and use of String#bytes should be
+    # more portable between Rubies 1.8.x and 1.9.x, with the exception of
+    # anything prior to version 1.8.7 where String#bytes was added ...
+    #
+    bytes = sha1.digest[0, 16].bytes.to_a
 
     # We adjust version to be 5 correctly ...
     bytes[6] &= 0x0f
@@ -77,7 +89,7 @@ if Facter.value(:kernel) == 'Linux'
     # The values 4, 2, 2, 2 and 6 denote how many bytes we collect at once
     # giving the total of 16 bytes (128 bits) ...
     #
-    value = [4, 2, 2, 2, 6].collect { |i| bytes.slice!(0, i).unpack('H*') }.join('-')
+    value = [4, 2, 2, 2, 6].collect {|i| bytes.slice!(0, i).pack('C*').unpack('H*') }.join('-')
 
     Facter.add('uuid') do
       confine :kernel => :linux

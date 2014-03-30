@@ -5,8 +5,6 @@
 # last resort" if you wish) that is available on the system ...
 #
 
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
   # We store information about the default gateway here ...
   gateway = ''

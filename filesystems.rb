@@ -5,12 +5,7 @@
 # be used for block devices like hard drives, media cards and so on ...
 #
 
-require 'thread'
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
-  mutex = Mutex.new
-
   # We store a list of file systems here ...
   file_systems = []
 
@@ -71,7 +66,7 @@ if Facter.value(:kernel) == 'Linux'
     # We have something, so let us apply our device type filter ...
     next if line.match(exclude)
 
-    mutex.synchronize { file_systems << line }
+    file_systems << line
   end
 
   Facter.add('filesystems') do

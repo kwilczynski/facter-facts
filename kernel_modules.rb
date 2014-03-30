@@ -5,8 +5,6 @@
 # modules that are currently loaded and are in the "live" state.
 #
 
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
   #
   # We will pass Proc object for execution later inside "setcode" block.  This

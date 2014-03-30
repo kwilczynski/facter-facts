@@ -8,12 +8,7 @@
 # make no sense and are not of our concern ...
 #
 
-require 'thread'
-require 'facter'
-
 if Facter.value(:kernel) == 'Linux'
-  mutex = Mutex.new
-
   # We store a list of block devices hosting mount points here ...
   mounts = []
 
@@ -66,10 +61,7 @@ if Facter.value(:kernel) == 'Linux'
       # This tends to be often broken there ...  Relative path hell ...
       #
       v = File.join('/dev', v) unless File.exists?(v)
-
-      mutex.synchronize do
-        k.update(File.stat(v).rdev => v)
-      end
+      k.update(File.stat(v).rdev => v)
     end
 
     k # Yield hash back into the block ...
@@ -114,10 +106,8 @@ if Facter.value(:kernel) == 'Linux'
     device = known_devices.values_at(File.stat(mount).dev).shift || device
 
     # Add where appropriate ...
-    mutex.synchronize do
-      devices << device
-      mounts  << mount
-    end
+    devices << device
+    mounts  << mount
   end
 
   Facter.add('devices') do

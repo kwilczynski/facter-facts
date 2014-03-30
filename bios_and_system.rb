@@ -6,7 +6,6 @@
 # Media Interface) space.
 #
 
-require 'facter'
 require 'facter/manufacturer'
 
 query = {
