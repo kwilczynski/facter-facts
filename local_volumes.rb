@@ -32,7 +32,7 @@ if Facter.value(:kernel) == 'Linux'
   # This is due to some problems with IO#read in Ruby and reading content of
   # the "proc" file system that was reported more than once in the past ...
   #
-  Facter::Util::Resolution.exec('/bin/df -lP').each_line do |line|
+  Facter::Util::Resolution.exec('/bin/df -lPT -x tmpfs -x aufs -x devtmpfs').each_line do |line|
     # Remove bloat ...
     line.strip!
 
