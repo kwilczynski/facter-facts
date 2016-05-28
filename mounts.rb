@@ -18,9 +18,9 @@ if Facter.value(:kernel) == 'Linux'
   # Support for the following might not be of interest ...
   exclude = %w(afs anon_inodefs aufs autofs bdev bind binfmt_.* cgroup cifs
                coda cpuset debugfs devfs devpts ecryptfs fd ftpfs fuse.* gvfs.*
-               hugetlbfs inotifyfs iso9660 lustre.* mfs mqueue ncpfs NFS nfs.*
+               hugetlbfs inotifyfs iso9660 lustre.* mfs mqueue ncpfs NFS nfs.* nsfs
                none pipefs proc pstore ramfs rootfs rpc_.* securityfs shfs shm
-               smbfs sockfs sysfs tmpfs udev udf unionfs usbfs)
+               smbfs sockfs sysfs systemd tmpfs udev udf unionfs usbfs)
 
   #
   # Modern Linux kernels provide "/proc/mounts" in the following format:
