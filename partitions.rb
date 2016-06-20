@@ -25,7 +25,7 @@ if Facter.value(:kernel) == 'Linux'
   # MMC is Multi Media Card which can be either SD or microSD, etc ...
   # MTD is Memory Technology Device also known as Flash Memory
   #
-  exclude = %w(backdev.* dm-\d loop md mmcblk mtdblock ramzswap)
+  exclude = %w(backdev.* dm-\d loop md mmcblk mtdblock ram ramzswap)
 
   #
   # Modern Linux kernels provide "/proc/partitions" in the following format:
