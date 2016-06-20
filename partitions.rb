@@ -25,7 +25,7 @@ if Facter.value(:kernel) == 'Linux'
   # MMC is Multi Media Card which can be either SD or microSD, etc ...
   # MTD is Memory Technology Device also known as Flash Memory
   #
-  exclude = %w(backdev.* dm-\d loop md mmcblk mtdblock ram ramzswap)
+  exclude = %w(backdev.* dm-\d loop mmcblk mtdblock ram ramzswap)
 
   #
   # Modern Linux kernels provide "/proc/partitions" in the following format:
@@ -76,8 +76,14 @@ if Facter.value(:kernel) == 'Linux'
         disk = partition
       end
     else
-      # Everything else ...
-      disk = partition.scan(/^[a-zA-Z]+/)
+      # Take care of any partitions create atop of the
+      # Linux Software RAID decies like e.g. /dev/md0, etc.
+      if match = partition.match(/^(md\d+)/)
+        disk = match[1]
+      else
+        # Everything else ...
+        disk = partition.scan(/^[a-zA-Z]+/)
+      end
     end
 
     # Convert back into a string value ...
